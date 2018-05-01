@@ -19,9 +19,10 @@ from run_nbody_sim import G, AU, mSol, bf, rSol, mEarth, \
 
 class systemBF:
     """Make a class object of the system of bodies."""
+
     def __init__(self):
-        """Initialize the class"""
-        self.bodies = []                                    # list of bodies
+        """Initialize the class with a list of the bodies contained in it."""
+        self.bodies = []
 
     def addBod(self, body):
         """Add a body to the system."""
@@ -30,17 +31,6 @@ class systemBF:
     def removeBod(self, body):
         """Remove a body from the system."""
         self.bodies.remove(body)
-
-    def EscapeVelocity(self, body):
-        """Calculate the escape velocity of a given body.
-
-        Not sure what this is actually doing, partially because it's not
-        returning anything and partially because why bodies[0]?
-        Also d should be CoM I assume?
-        This can probably be ignored or removed.
-        """
-        mtot = self.bodies[0].mass
-        vEscape = np.sqrt(2 * G * mtot/d)
 
     def CenterOfMass(self, bodies):
         """Calculate the center of mass of a group of bodies."""
@@ -184,6 +174,7 @@ class systemBF:
         print self.bodies
 
         # Initiate each body's file
+        # Changing positionAndVelocityUpdater to be DF based would change this.
         for i in range(0, len(self.bodies)):
             b = self.bodies[i]
             fnames.append(b.fname)
@@ -206,5 +197,5 @@ class systemBF:
 
 
         print "Final Duration with", nSmallBods, "small bodies over", nTimesteps, "steps (seconds):", time.time() - startBF
-        #plotTrajectories()
+        # plotTrajectories()
         return [nSmallBods, time.time() - startBF]
