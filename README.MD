@@ -32,18 +32,22 @@ This package is structured to be run with a simple '''python python run_driver.p
 The results can be visualized in a couple different ways:
 
 First, as a simple trajectory plot, for both brute-force and barnes-hut methods:
+
 ![](Figures/solarsystem.png)
 
 If we have a Barnes-Hut run, we can gif the graph evolution (two here because I just love how they look):
+
 ![](Figures/solarsystem.gif)
 
 ![](Figures/grid_evolution.gif)
 
 
 We may also plot the RV curve of a system, comparing it with the trajectory plot above.
+
 ![](Figures/rv_and_orbit_jup.png)
 
 By running a bunch of sims, we can plot the time-cost. This demonstrates that the Barnes-Hut gridding is actually doing its job and creating a log cost.
+
 ![](Figures/cost_evaluation.png)
 
 
