@@ -47,7 +47,8 @@ def plotLines(saveFigs=False):
     """
     Plot lines connecting trajectory steps.
 
-    To mimic this: https://www.facebook.com/permalink.php?story_fbid=536038580109918&id=100011113415766&notif_id=1513793777241322&notif_t=feedback_reaction_generic_tagged
+    To mimic this: 
+    https://www.facebook.com/brightside/videos/893000730828671/UzpfSTEwMDAxMTExMzQxNTc2Njo1MzYwMzg1ODAxMDk5MTg/?story_fbid=536038580109918&id=100011113415766&notif_id=1513793777241322&notif_t=feedback_reaction_generic_tagged
 
     Obviously, do a run before doing this.
 
