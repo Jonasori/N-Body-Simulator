@@ -11,16 +11,16 @@ This was written as a class project in the fall of 2017, I have used it as a sid
 The package has two primary functions: running an n-body sim by brute force (calculating the force contribution from every body in the system in each step), or running one using Barnes-Hut gridding, which uses some simple approximations to limit the number of force contributions that need to be calculated at each step, reducing the computational cost of a run pretty significantly (from O(n$^2$ to O(n logn))).
 
 The results are visualized in a couple different ways:
-![](solarsystem.png)
+![](Figures/solarsystem.png)
 
-![](solarsystem.gif)
-
-
-
-![](rv_and_orbit_jup.png)
+![](Figures/solarsystem.gif)
 
 
-![](cost_evaluation.png)
+
+![](Figures/rv_and_orbit_jup.png)
 
 
-![](grid_evolution.gif)
+![](Figures/cost_evaluation.png)
+
+
+![](Figures/grid_evolution.gif)
