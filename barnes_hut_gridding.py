@@ -1,3 +1,5 @@
+"""Set up node and tree objects for a Barnes-Hut-gridded simulation."""
+
 import copy
 import random
 import time
@@ -6,19 +8,19 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from analysis import plotTrajectories
-from run_nbody_sim import axlims, gifNames, theta, AU, dt, n, mSol, rSol, mEarth, \
-    rEarth, G, bh, elapsedTimeBH
+from constants import axlims, gifNames, theta, AU, dt, mSol, rSol, \
+                      mEarth, rEarth, G, elapsedTimeBH #, n, bh
 from body import body
 
 
 class node:
-    def __init__(self, name, xlims, ylims, parent):
+    def __init__(self, name, xlims, ylims, parent=None):
         self.name = name
         self.bodies = []
         self.bodiesContained = []
         self.xlims = xlims
         self.ylims = ylims
-        self.com = [0,0]
+        self.com = [0, 0]
         self.totalMass = 0
         self.ne = None
         self.nw = None
@@ -46,8 +48,12 @@ class tree:
 
 
     def remove(self, body):
-        # Remove a body from the structure by emptying its host node.
-        # This should work since, after the sorting, no node should be holding more than one body.
+        """
+        Remove a body from the structure by emptying its host node.
+
+        This should work since, after the sorting, no node should
+        be holding more than one body.
+        """
         bods = self.searchTree(self.root, 'bodies')
         for i in range(len(bods)):
             # If there's a body here
@@ -59,6 +65,7 @@ class tree:
 
 
     def traceback(self, n):
+        """Do some tracing back through the tree."""
         path = ''
         while n.name != 'root':
             path = (n.name + '-' + path)
@@ -85,11 +92,13 @@ class tree:
 
 
     def sortBody(self, n, body):
-        # Sort a body into the tree
-        # Add body's mass to the total mass of each node it passes through.
-        # If the body is trying to go somewhere outside the node, just drop it.
-        """ Mechanics
+        """
+        Sort (add) a body into the tree.
 
+        Add body's mass to the total mass of each node it passes through.
+        If the body is trying to go somewhere outside the node, just drop it.
+
+        Mechanics:
             Given a body and a node:
                 add the body to the node
                 if there are other bodies in the same node:
@@ -98,14 +107,15 @@ class tree:
                     add each body to the appropriate subnode
 
                     if there are other bodies...
-                    """
 
-
+        Args:
+            n (node): the root node we're adding in to.
+            body (body): the body we're adding.
+        """
         # If the body is trying to go outside the node's limits, just pass it (delete it)
-        if body.xs[-1] > n.xlims[1] or  body.xs[-1] < n.xlims[0] or body.ys[-1] > n.ylims[1] or  body.ys[-1] < n.ylims[0]:
+        if body.xs[-1] > n.xlims[1] or body.xs[-1] < n.xlims[0] or body.ys[-1] > n.ylims[1] or  body.ys[-1] < n.ylims[0]:
             # Just return. If we've made it this far, then the body hasn't stuck anywhere above, so by not placing it in this one, it just disappears
             return
-
 
         # Want to add mass to every body as we go.
         n.totalMass += body.mass
@@ -204,10 +214,16 @@ class tree:
 
 
     def searchTree(self, rootNode, param):
-        # Search the tree for a param using Breadth First Search
-        # BFS inspired by pseudo code on Wikipedia (Tree Traversal)
-        # Make sure to call the param as a string.
+        """
+        Search the tree for a param using Breadth First Search.
 
+        BFS inspired by pseudo code on Wikipedia (Tree Traversal)
+        Make sure to call the param as a string.
+
+        Args:
+            rootNode (Node object): the node from which to begin our search.
+            param (str): the quality we're looking for (i.e. mass)
+        """
         # Pull param from each body held in nInit and return as a list
         paramList = []
         q = [rootNode]
@@ -234,19 +250,28 @@ class tree:
 
 
     def calculateCenterOfMass(self, n):
+        """Calculate the center of mass for a node n."""
         Mcomx = 0
         Mcomy = 0
+        print "Total Mass in this Node (kg)", n.totalMass
         for i in n.bodiesContained:
             Mcomx += i.xs[-1]*i.mass
             Mcomy += i.ys[-1]*i.mass
 
         n.com = [Mcomx/(n.totalMass), Mcomy/(n.totalMass)]
-        #print "Total Mass in this Node (kg)", n.totalMass
         #print "Center of mass (AU)", [n.com[0]/AU, n.com[1]/AU]
 
 
 
-    def visualizeTree(self, t):
+    def visualizeTree(self, t=-1):
+        """Plot the graph (as a spatial map, not a tree).
+
+        Args:
+            t (int): timestep number of the graph moment we're looking at.
+                     Useful if we want to make a gif of the graph's evolution,
+                     in which case we should name the plots' output files
+                     intelligently. This just does that, nothing else.
+            """
         # GRID PLOTTING
         # Get the boundaries:
         xlims = self.searchTree(self.root, 'xlims')
@@ -276,15 +301,18 @@ class tree:
 
 
         # Calculate the CoM of each body
-        self.calculateCenterOfMass(self.root)
-        #com = plt.Circle((self.root.nw.com[0], self.root.nw.com[1]), radius=1*AU, color="black", alpha=0.7)
-        #print "VISUALIZE COM: ", self.root.com
-        #ax.add_artist(com)
+        get_com = False
+        if get_com:
+            self.calculateCenterOfMass(self.root)
+            com = plt.Circle((self.root.nw.com[0], self.root.nw.com[1]), radius=1*AU, color="black", alpha=0.7)
+            print "VISUALIZE COM: ", self.root.com
+            ax.add_artist(com)
+
         #plt.legend()
         plt.title('Barnes-Hut Orbital Paths')
         plt.xlabel('Distance (meters)')
         plt.ylabel('Distance (meters)')
-        outstr = "graph_moment" + str(t) + ".jpeg"
+        outstr = "graph_moment" + str(t) + ".pdf" if t != -1 else "graph_str.pdf"
         gifNames.append(outstr)
         print len(gifNames)
         plt.savefig(outstr)
@@ -294,12 +322,15 @@ class tree:
 
 
     def calculateGravBH(self, n, b):
-        """ MECHANICS:
+        """
+        Calculate the gravitational influence of a node.
+
+        Mechanics:
             For a given node and body:
             Calculate s/d
             If s/d < theta, calculate that node's CoM and gravitational effect.
             else, try each of those inner nodes
-            """
+        """
 
         # If this node is a leaf (i.e. no subs, just a nice little body), just do the grav
         if len(n.bodies) > 0:
@@ -308,10 +339,9 @@ class tree:
 
         # There are no bodies, so it's either an empty leaf or an empty internal branch
         else:
-            # Mass is a better way of evaluating this than len(bodies) since an internal node won't have bodies but will have totalMass
+            # Mass is a better way of evaluating this than len(bodies) since an
+            # internal node won't have bodies but will have totalMass
             if n.totalMass > 0:
-                #print "mass > 0"
-
                 # Don't compare the body to its own node
                 if b in n.bodiesContained:
                     self.calculateGravBH(n.ne, b)
@@ -343,6 +373,15 @@ class tree:
 
 
     def RVplotBH(self):
+        """
+        Make a radial-velocity plot for the system's central object (star).
+
+        Note that there are some problems here; for one, it assumes that there
+        is a central object, and that it's the first object in the list of bodies.
+
+        Still, a cool idea that has room for improvement.
+        """
+
         #plt.ion()
         plotVerticalRange = AU
 
@@ -351,7 +390,6 @@ class tree:
         ax.axis([0, nTimesteps, -plotVerticalRange, plotVerticalRange])
 
         # A little bit junky. Recall that searchTree returns a backwards list, so the Sun is at the end.
-
         emptybods = self.searchTree(self.root, 'bodies')
         bods = []
         for i in len(emptybods):
@@ -361,10 +399,7 @@ class tree:
         star = bods[-1]
         print star.name
 
-
-        xs = []
-        ts = []
-
+        xs, ts = [], []
         for t in range(len(star.xs)):
 
             # Find CoM so that it can be subtracted to keep the star in place
@@ -382,22 +417,19 @@ class tree:
 
 
 
-    def step_BH(self, nOld):
-        """ PURPOSE:
-            Take on time step, moving all bodies in the system appropriately using the Barnes-Hut approximation.
-            Begin by gathering all the bodies into a list.
-            For each body:
-                - From some node n (starting at rootNode), see if the BH approx (s/d < theta) works.
-                    - If it does, calculate the gravity exerted by a fabricated body of mass n.totalMass and located at n.com.
-                    - If it doesn't, do this whole process to each of its subnodes.
+    def take_step(self, nOld):
+        """
+        Step the system in time according the Barnes-Hut approximation.
 
-            """
-
-
-
+        Begin by gathering all the bodies into a list.
+        For each body:
+            - From some node n (starting at rootNode), see if the BH approx (s/d < theta) works.
+                - If it does, calculate the gravity exerted by a fabricated body of mass n.totalMass and located at n.com.
+                - If it doesn't, do this whole process to each of its subnodes.
+        """
         # Get the list of bodies
-        # This might be pretty expensive
-        bods = self.searchTree(n, 'bodies')
+        # This is pretty expensive. Maybe add this list as a system attribute.
+        bods = self.searchTree(nOld, 'bodies')
 
         positions = np.array([])
         for i in range(0, len(bods)):
@@ -417,25 +449,30 @@ class tree:
 
 
 
-    def run_BarnesHut(self, nTimesteps, nSmallBods):
+    def run(self, nTimesteps, nSmallBods):
+        """Execute the run."""
         # Start the timer for cost analysis:
         startBH = time.time()
+
+        # Choose which bodies we want to add in:
         # exampleBody =  body(name, mass, radius, xy, velocity, color)
         mStar = mSol
-        self.addBod(n, body('Star', mStar, rSol, [1, 1], [0,-0], 'y'))
-        self.addBod(n, body('Mercury', 0.055*mEarth, 0.3829*rEarth, [-0.4481*AU, 0], [0, -55410], 'blue'))
-        #self.addBod(n, body('Venus', 0.815*mEarth, 0.949*rEarth, [0.721*AU, 0], [0, 34910], 'orange'))
-        #self.addBod(n, body('Earth', mEarth, rEarth, [0, AU], [-29838, -0], 'g'))
-        #self.addBod(n, body('Mars', 0.10745*mEarth, 0.531*rEarth, [0, -1.52*AU], [24074, 0], 'red'))
-        #self.addBod(n, body('Jupiter', 317*mEarth, 11*rEarth, [5.2*AU, 0], [0, 13048], 'magenta'))
-        #self.addBod(n, body('Saturn', 95.16*mEarth, 9.14*rEarth, [0,10.06*AU], [-10180, 0], 'orange'))
-        #self.addBod(n, body('Uranus', 14.53*mEarth, 3.976*rEarth, [-19.91*AU, 0], [0, -7058], 'blue'))
-        self.addBod(n, body('Neptune', 17.148*mEarth, 3.86*rEarth, [0, -29.95*AU], [5413, 0], 'cyan'))
-        #self.addBod(n, body('HotJupiter', 317*mEarth, 11*rEarth, [0.1*AU, 0], [0, 17315], 'red'))
+        self.addBod(self.root,
+                    body('Star', mStar, rSol, [1, 1], [0,-0], 'y'))
+        self.addBod(self.root,
+                    body('Mercury', 0.055*mEarth, 0.3829*rEarth, [-0.4481*AU, 0], [0, -55410], 'blue'))
+        #self.addBod(self.root, body('Venus', 0.815*mEarth, 0.949*rEarth, [0.721*AU, 0], [0, 34910], 'orange'))
+        #self.addBod(self.root, body('Earth', mEarth, rEarth, [0, AU], [-29838, -0], 'g'))
+        #self.addBod(self.root, body('Mars', 0.10745*mEarth, 0.531*rEarth, [0, -1.52*AU], [24074, 0], 'red'))
+        #self.addBod(self.root, body('Jupiter', 317*mEarth, 11*rEarth, [5.2*AU, 0], [0, 13048], 'magenta'))
+        #self.addBod(self.root, body('Saturn', 95.16*mEarth, 9.14*rEarth, [0,10.06*AU], [-10180, 0], 'orange'))
+        #self.addBod(self.root, body('Uranus', 14.53*mEarth, 3.976*rEarth, [-19.91*AU, 0], [0, -7058], 'blue'))
+        self.addBod(self.root, body('Neptune', 17.148*mEarth, 3.86*rEarth, [0, -29.95*AU], [5413, 0], 'cyan'))
+        #self.addBod(self.root, body('HotJupiter', 317*mEarth, 11*rEarth, [0.1*AU, 0], [0, 17315], 'red'))
 
-        # V2434 Ori
-        #self.addBod(n, body('V2434a', 3.5*mSol, 3.5*rSol, [-220*AU, 0], [0, -np.sqrt((-G*6*mSol)/(220*AU))], 'blue'))
-        #self.addBod(n, body('V2434b', 3.*mSol, 3*rSol, [220*AU, 0], [0, np.sqrt((-G*6*mSol)/(220*AU))], 'cyan'))
+        # V2434 Ori, the system I research
+        #self.addBod(self.root, body('V2434a', 3.5*mSol, 3.5*rSol, [-220*AU, 0], [0, -np.sqrt((-G*6*mSol)/(220*AU))], 'blue'))
+        #self.addBod(self.root, body('V2434b', 3.*mSol, 3*rSol, [220*AU, 0], [0, np.sqrt((-G*6*mSol)/(220*AU))], 'cyan'))
         #"""
         # Inner ring of small random bodies:
         if nSmallBods > 0:
@@ -467,7 +504,8 @@ class tree:
 
 
         # Grab them bods
-        bods = self.searchTree(n, 'bodies')
+        # This is expensive. Maybe add this as an attribute.
+        bods = self.searchTree(self.root, 'bodies')
 
         # Initiate a file that has the filename of each body so that later we know what to be looking for.
         fnames = []
@@ -494,10 +532,9 @@ class tree:
 
             # Clear out subnodes under root for each iteration
             nOld = copy.deepcopy(self.root)
+
             self.root = node('root', [-axlims, axlims], [-axlims, axlims], None)
-
-
-            self.step_BH(nOld)
+            self.take_step(nOld)
             print "\n\nBH Timestep:", t, "finished"
             stepTime = time.time()
             elapsedTimeBH.append([t, stepTime - startBH])
@@ -508,11 +545,3 @@ class tree:
         print "Final Duration with", nSmallBods, "small bodies over", nTimesteps, "steps (seconds):", time.time() - startBH
         plotTrajectories()
         return [nSmallBods, time.time() - startBH]
-
-
-
-
-
-
-
-

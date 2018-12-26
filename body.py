@@ -1,7 +1,8 @@
 """Creates a body object to be used in the simulator."""
 
 import numpy as np
-from run_nbody_sim import G
+from constants import G
+
 
 
 class body:
@@ -62,7 +63,25 @@ class body:
                        )
 
         # Now write this position change to the body's file.
+        # Maybe change this to a DF and pickle it?
         g = open(self.fname, 'a')
         outstr = str(self.xs[-1]) + " " + str(self.ys[-1]) + '\n'
         g.write(outstr)
         g.close()
+
+    def hill_radius(self, otherBody):
+        """Calculate the Hill Radius of a body.
+
+        From Wiki: An astronomical body's Hill sphere is the region in which it
+        dominates the attraction of satellites. The outer shell of that region
+        constitutes a zero-velocity surface.
+
+        Note that this is set up for circular orbits, which is probably a bad
+        assumption for this orbits, but finding a real eccentricity would be
+        brutal.
+        """
+        e = 0
+        a = np.sqrt((self.xs[-1] - otherBody.xs[-1])**2
+                    + (self.ys[-1] - otherBody.ys[-1])**2)
+        r_hill = a * (1 - e) * (otherBody.mass / (3*self.mass))**(1/3)
+        return r_hill

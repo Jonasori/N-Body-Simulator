@@ -1,20 +1,19 @@
 """
-Run the brute-force simulation.
+Set up the brute-force simulator class.
 
-blah
+This gets called in run_driver.
+Maybe want to go from camelCase to snake_case.
 """
 
-# Import packages
 import copy
 import random
 import time
-
 import numpy as np
 from matplotlib import pyplot as plt
 
 from body import body
-from run_nbody_sim import G, AU, mSol, bf, rSol, mEarth, \
-                          rEarth, dt, elapsedTimeBH
+from constants import G, AU, mSol, rSol, mEarth, \
+                      rEarth, dt, elapsedTimeBH #, bf
 
 
 class systemBF:
@@ -81,7 +80,7 @@ class systemBF:
         ax.axis([0, nTimesteps, -plotVerticalRange, plotVerticalRange])
 
         for t in range(nTimesteps):
-            self.step_BruteForce(dt*6)
+            self.take_step(dt*6)
             ax.plot(t, 0, '-k')
 
             # Find CoM so that it can be subtracted to keep the star in place
@@ -100,7 +99,7 @@ class systemBF:
             plt.show(block=False)
             plt.pause(0.0001)
 
-    def step_BruteForce(self, dt):
+    def take_step(self, dt):
         """Step the system forward through time.
 
         To be sure that we're not taking updated positions, begin by copying
@@ -123,25 +122,29 @@ class systemBF:
                 print "removed", i.name, "for being too far away"
                 """
 
-    def run_BruteForce(self, nTimesteps, nSmallBods):
+
+
+    def run(self, nTimesteps, nSmallBods):
+        """Execute the run."""
         # Start the timer:
         startBF = time.time()
-        mStar = mSol
+
+        # Choose which bodies we want to add in:
         # exampleBody =  body(name, mass, radius, xy, velocity, color)
-        bf.addBod(body('Star', mStar, rSol, [0,0], [0,-0], 'y'))
-        # bf.addBod(body('Mercury', 0.055*mEarth, 0.3829*rEarth, [-0.4481*AU, 0], [0, -55410], 'blue'))
-        bf.addBod(body('Venus', 0.815*mEarth, 0.949*rEarth, [0.721*AU, 0], [0, 34910], 'orange'))
-        bf.addBod(body('Earth', mEarth, rEarth, [0, AU], [-29838, -0], 'g'))
-        # bf.addBod(body('Mars', 0.10745*mEarth, 0.531*rEarth, [0, -1.52*AU], [240740, 0], 'red'))
-        # bf.addBod(body('Jupiter', 317*mEarth, 11*rEarth, [5.2*AU, 0], [0, 13048], 'magenta'))
-        # bf.addBod(body('FastJupiter', 317*mEarth, 11*rEarth, [5.2*AU, 0], [0, 40000], 'magenta'))
-        # bf.addBod(body('Saturn', 95.16*mEarth, 9.14*rEarth, [0,10.06*AU], [-10180, 0], 'orange'))
-        # bf.addBod(body('Uranus', 14.53*mEarth, 3.976*rEarth, [-19.91*AU, 0], [0, -7058], 'blue'))
-        # bf.addBod(body('Neptune', 17.148*mEarth, 3.86*rEarth, [0, -29.95*AU], [5413, 0], 'cyan'))
+        self.addBod(body('Star', mSol, rSol, [0,0], [0,-0], 'y'))
+        # self.addBod(body('Mercury', 0.055*mEarth, 0.3829*rEarth, [-0.4481*AU, 0], [0, -55410], 'blue'))
+        self.addBod(body('Venus', 0.815*mEarth, 0.949*rEarth, [0.721*AU, 0], [0, 34910], 'orange'))
+        self.addBod(body('Earth', mEarth, rEarth, [0, AU], [-29838, -0], 'g'))
+        # self.addBod(body('Mars', 0.10745*mEarth, 0.531*rEarth, [0, -1.52*AU], [240740, 0], 'red'))
+        # self.addBod(body('Jupiter', 317*mEarth, 11*rEarth, [5.2*AU, 0], [0, 13048], 'magenta'))
+        # self.addBod(body('FastJupiter', 317*mEarth, 11*rEarth, [5.2*AU, 0], [0, 40000], 'magenta'))
+        # self.addBod(body('Saturn', 95.16*mEarth, 9.14*rEarth, [0,10.06*AU], [-10180, 0], 'orange'))
+        # self.addBod(body('Uranus', 14.53*mEarth, 3.976*rEarth, [-19.91*AU, 0], [0, -7058], 'blue'))
+        # self.addBod(body('Neptune', 17.148*mEarth, 3.86*rEarth, [0, -29.95*AU], [5413, 0], 'cyan'))
 
         # Simualte my research target stars, V2434 Ori
-        # bf.addBod(body('V2434a', 3.5*mSol, 3.5*rSol, [-220*AU, 0], [0, -np.sqrt((-G*6*mSol)/(220*AU))], 'blue'))
-        # bf.addBod(body('V2434b', 3.*mSol, 3*rSol, [220*AU, 0], [0, np.sqrt((-G*6*mSol)/(220*AU))], 'cyan'))
+        # self.addBod(body('V2434a', 3.5*mSol, 3.5*rSol, [-220*AU, 0], [0, -np.sqrt((-G*6*mSol)/(220*AU))], 'blue'))
+        # self.addBod(body('V2434b', 3.*mSol, 3*rSol, [220*AU, 0], [0, np.sqrt((-G*6*mSol)/(220*AU))], 'cyan'))
 
         # Make an inner ring of small random bodies:
         if nSmallBods > 0:
@@ -163,7 +166,7 @@ class systemBF:
                 vy = v * (x/abs(x)) * np.cos(x/y) + variance
 
                 name = 'planetesimal_'+str(i)
-                bf.addBod(body(name, m, r, [x, y], [vx, vy], 'y'))
+                self.addBod(body(name, m, r, [x, y], [vx, vy], 'y'))
 
         # Make a file that has the filename of each body, initiate body files.
         fnames = []
@@ -189,7 +192,7 @@ class systemBF:
         # Do the actual run:
         for t in range(nTimesteps):
             # Take your step
-            self.step_BruteForce(dt)
+            self.take_step(dt)
 
             print "\n\nBF Timestep:", t, "finished"
             stepTime = time.time()

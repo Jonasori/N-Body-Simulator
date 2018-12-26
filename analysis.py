@@ -1,11 +1,19 @@
+"""
+Macroscopic analysis tools for looking at runs.
+
+Note that all these tools draw on runs that have already been executed
+(i.e. this only draws on files from completed runs, rather than starting
+runs of it's own.)
+"""
+
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 
-from run_nbody_sim import trajOutName, axlims, AU, gifOutName, rSol
+from constants import trajOutName, axlims, AU, gifOutName, rSol
 
 
-def plotTrajectories(outAsFile=-1):
+def plotTrajectories(save_plot=False):
     # Make a trajectory (smeared) plot from a some coordinate outfiles. Show or savefig().
     outname = trajOutName
     filenames = pd.read_table('filenames.log').Name
@@ -19,6 +27,8 @@ def plotTrajectories(outAsFile=-1):
     for f in filenames:
         print f
         p = pd.read_table(f, delim_whitespace=True)
+        if f == 'Star.txt':
+            plt.plot(p.XS, p.YS, 'oy')
         plt.plot(p.XS, p.YS)
 
     #plt.legend()
@@ -26,22 +36,24 @@ def plotTrajectories(outAsFile=-1):
     plt.xlabel('Distance (meters)')
     plt.ylabel('Distance (meters)')
 
-    if outAsFile == 1:
+    if save_plot is True:
         plt.savefig(outname)
         print "Trajectories plotted in", outname
-    elif outAsFile == -1:
-        plt.show(block=False)
     else:
-        print "Do you want the plot saved as a figure or shown on the screen? (1 = save as fig, -1 = show on screen)"
+        plt.show()
 
 
-def plotLines(saveFigs = -1):
-    # To mimic this: https://www.facebook.com/permalink.php?story_fbid=536038580109918&id=100011113415766&notif_id=1513793777241322&notif_t=feedback_reaction_generic_tagged
+def plotLines(saveFigs=False):
+    """
+    Plot lines connecting trajectory steps.
 
-    # Obviously, do a run before doing this.
+    To mimic this: https://www.facebook.com/permalink.php?story_fbid=536038580109918&id=100011113415766&notif_id=1513793777241322&notif_t=feedback_reaction_generic_tagged
 
-    # saveFigs: If you want to save every step as an image (to turn into a gif), use saveFigs=1. Otherwise (saveFigs=-1, default), just show the image.
+    Obviously, do a run before doing this.
 
+    Args:
+        saveFigs (bool): saves (if True) or shows (if False) each step's plot.
+    """
     axlims = 1.5 * AU
     outname = 'orbitLines'
 
@@ -70,14 +82,11 @@ def plotLines(saveFigs = -1):
         plt.plot([planets[0].XS[i], planets[1].XS[i]], [planets[0].YS[i], planets[1].YS[i]], color='cyan', alpha=0.07, linestyle='-')
         i += 100
 
-        if saveFigs == 1:
+        if saveFigs is True:
             plt.savefig(outname + str(i) + '.jpeg')
 
-    if saveFigs == -1:
+    if saveFigs is False:
         plt.show(block=False)
-
-
-        
 
 
 def makePics(fnames, gifYN):
@@ -166,8 +175,3 @@ def plotRV(filename):
 
 
     plt.show(block=False)
-
-
-
-
-# Just adding something to see if I understand git
