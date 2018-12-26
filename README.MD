@@ -31,27 +31,27 @@ This package is structured to be run with a simple '''python python run_driver.p
 ## Visualization:
 The results can be visualized in a couple different ways:
 
-First, as a simple trajectory plot, for both brute-force and barnes-hut methods:
+* First, as a simple trajectory plot, for both brute-force and barnes-hut methods:
 
 ![](Figures/solarsystem.png)
 
-If we have a Barnes-Hut run, we can gif the graph evolution (two here because I just love how they look):
+* If we have a Barnes-Hut run, we can gif the graph evolution (two here because I just love how they look):
 
 ![](Figures/solarsystem.gif)
 
 ![](Figures/grid_evolution.gif)
 
 
-We may also plot the RV curve of a system, comparing it with the trajectory plot above.
+* We may also plot the RV curve of a system, comparing it with the trajectory plot above.
 
 ![](Figures/rv_and_orbit_jup.png)
 
 
-By running a bunch of sims, we can plot the time-cost. This demonstrates that the Barnes-Hut gridding is actually doing its job and creating a log cost.
+* By running a bunch of sims, we can plot the time-cost. This demonstrates that the Barnes-Hut gridding is actually doing its job and creating a log cost.
 
 ![](Figures/cost_evaluation.png)
 
-I once saw [a video](https://www.facebook.com/brightside/videos/893000730828671/UzpfSTEwMDAxMTExMzQxNTc2Njo1MzYwMzg1ODAxMDk5MTg/?story_fbid=536038580109918&id=100011113415766&notif_id=1513793777241322&notif_t=feedback_reaction_generic_tagged) that purported to show an animation of lines connecting two planets at a bunch of timesteps through a few orbits, which created some "sacred geometry" and looked really nice. However, I was a little suspicious of it and, realizing that I had the tools to test whether or not it was true, I added a plotting feature (plotLines in analysis.py) to recreate the plot. Unfortunately, they're on a remote computer that I don't currently have access to, but I'll hopefully add some of the resulting plots soon if I remember (spoiler: they didn't work out to show sacred geometry in our Solar System).
+* Finally, I once saw [a video](https://www.facebook.com/brightside/videos/893000730828671/UzpfSTEwMDAxMTExMzQxNTc2Njo1MzYwMzg1ODAxMDk5MTg/?story_fbid=536038580109918&id=100011113415766&notif_id=1513793777241322&notif_t=feedback_reaction_generic_tagged) that purported to show an animation of lines connecting two planets at a bunch of timesteps through a few orbits, which created some "sacred geometry" and looked really nice. However, I was a little suspicious of it and, realizing that I had the tools to test whether or not it was true, I added a plotting feature (plotLines in analysis.py) to recreate the plot. Unfortunately, they're on a remote computer that I don't currently have access to, but I'll hopefully add some of the resulting plots soon if I remember (spoiler: they didn't work out to show sacred geometry in our Solar System).
 
 
 
