@@ -9,7 +9,7 @@ from matplotlib import pyplot as plt
 
 from analysis import plotTrajectories
 from constants import axlims, gifNames, theta, AU, dt, mSol, rSol, \
-                      mEarth, rEarth, G, elapsedTimeBH #, n, bh
+                      mEarth, rEarth, G, elapsedTimeBH
 from body import body
 
 
